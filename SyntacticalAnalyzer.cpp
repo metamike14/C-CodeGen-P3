@@ -14,7 +14,6 @@ SyntacticalAnalyzer::SyntacticalAnalyzer (char * filename)
 {
     cg = new CodeGen (filename);
     lex = new LexicalAnalyzer (filename);
-    cg->WriteCode(0, "WHY WONT YOU WRITE");
 
     string temp = filename;
     temp.replace(temp.end()-2, temp.end(), "p2");
@@ -30,6 +29,7 @@ SyntacticalAnalyzer::SyntacticalAnalyzer (char * filename)
 SyntacticalAnalyzer::~SyntacticalAnalyzer ()
 {
 	delete lex;
+    delete cg;
 }
 
 
