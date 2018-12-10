@@ -12,7 +12,9 @@ token_type otherTokens[] = {IDENT_T, NUMLIT_T, STRLIT_T, CONS_T, IF_T, DISPLAY_T
 
 SyntacticalAnalyzer::SyntacticalAnalyzer (char * filename)
 {
+    cg = new CodeGen (filename);
     lex = new LexicalAnalyzer (filename);
+    cg->WriteCode(0, "WHY WONT YOU WRITE");
 
     string temp = filename;
     temp.replace(temp.end()-2, temp.end(), "p2");
@@ -63,13 +65,16 @@ int SyntacticalAnalyzer::define() {
         if(token == LPAREN_T){
             token = lex->GetToken(); // get next token after '('
             if(token == IDENT_T){
+                cg->WriteCode(0,"Object " + lex->GetLexeme() + "(");
                 token = lex->GetToken(); // get next token after 'ident'
                 errors +=param_list();
                 if(token == RPAREN_T){
+                    cg->WriteCode(0, ")\n{\n");
                     token = lex->GetToken(); // get next token after ')'
                     errors += stmt();
                     errors += stmt_list();
                     if(token == RPAREN_T){
+                        cg->WriteCode(0, "}\n\n");
                         token = lex->GetToken(); // get next token after ')'
                     } else{
                         lex->ReportSyntactErrors("RPAREN_T expected");
@@ -160,6 +165,7 @@ int SyntacticalAnalyzer::stmt() {
         }
     }else if(token == IDENT_T) {
         tokenActionsFile << "Using Rule 8\n";
+        cg->WriteCode(1, "return " + lex->GetLexeme());
         token = lex->GetToken(); // get next token after 'ident'
     }else if(token == NUMLIT_T || token == STRLIT_T || token == SQUOTE_T){
         tokenActionsFile << "Using Rule 7\n";
@@ -233,7 +239,10 @@ int SyntacticalAnalyzer::param_list() {
     int errors = 0;
     if(token == IDENT_T){
         tokenActionsFile << "Using Rule 16\n";
+        cg->WriteCode(0, "Object " + lex->GetLexeme());
         token = lex->GetToken();
+        if(token != RPAREN_T)
+            cg->WriteCode(0, ", ");
         errors += param_list();
     }else if(token == RPAREN_T){
         tokenActionsFile << "Using Rule 17\n";

@@ -1,5 +1,5 @@
-P2.out : Project2.o SetLimits.o LexicalAnalyzer.o SyntacticalAnalyzer.o
-	g++ -g -o P2.out Project2.o SetLimits.o LexicalAnalyzer.o SyntacticalAnalyzer.o
+P2.out : Project2.o SetLimits.o LexicalAnalyzer.o SyntacticalAnalyzer.o CodeGenerator.o
+	g++ -g -o P2.out Project2.o SetLimits.o LexicalAnalyzer.o SyntacticalAnalyzer.o CodeGenerator.o
 
 Project2.o : Project2.cpp SetLimits.h SyntacticalAnalyzer.h
 	g++ -g -c Project2.cpp
@@ -12,6 +12,9 @@ LexicalAnalyzer.o : LexicalAnalyzer.cpp LexicalAnalyzer.h
 
 SyntacticalAnalyzer.o : SyntacticalAnalyzer.cpp SyntacticalAnalyzer.h LexicalAnalyzer.h
 	g++ -g -c SyntacticalAnalyzer.cpp
+
+CodeGenerator.o : CodeGenerator.cpp CodeGenerator.h
+	g++ -g -c CodeGenerator.cpp
 
 clean : 
 	rm *.o P2.out 

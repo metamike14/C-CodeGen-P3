@@ -28,8 +28,6 @@ class LexicalAnalyzer
     private:
 	ifstream input; //read input
 	ofstream listingFile; //file .lst
-	ofstream tokenFile; //file .p1
-	ofstream debugFile; //file .dbg
 	token_type token;
 	string line;
 	int linenum;
