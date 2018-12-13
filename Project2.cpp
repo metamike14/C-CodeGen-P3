@@ -1,3 +1,6 @@
+//Authors: Michael Schmidt, Eduardo Roman, Nicholas Ivanoff
+//Assignment: Project 3
+
 #include <cstdlib>
 #include <iostream>
 #include <iomanip>
