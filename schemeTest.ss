@@ -1,28 +1,25 @@
-(define (what_is_this n)
-  (cond   ((null? n) 'this_is_null)
-          ((number? n) 'this_is_number)
-          ((list? n) 'this_is_a_list)
-          ((string? n) 'this_is_a_string)
-          (else 'dont_know_what_this_is))
-  )
+(define (funky v ls)
+	(cond 	((<= v 10)
+			(if (> v 5)
+				(* (+ v) (- v))
+				(round (/ v (modulo v 3)))
+			))
+		((= v 11) (cons v ls))
+		((< v 13) (car ls))
+		((or (number? v) (list? ls) (zero? v) (string? v)) v)
+		(else (cond ((null? ls) "empty")))
+	)
+)
+
 (define (main)
-  (display (what_is_this "word"))
-  (newline)
-
-  (display (what_is_this 14))
-  (newline)
-
-  (display (what_is_this '(a b c)))
-  (newline)
-
-  (display (what_is_this '()))
-  (newline)
-
-  (display (what_is_this 'foo))
-  (newline)
-
-  (display (what_is_this 'cdr))
-  (newline)
-  )
+	(if (and (>= 7 5) (not (>= 5 7)))
+     		(display (funky 5 '(a 5 hello world cons if display
+     			    newline cadr and or not define
+     			    number? list? zero? null?
+     			    string? + - / * modulo round = > < >=
+     			    <= cond else)))
+     	)
+	(newline)
+)
 
 (main)
