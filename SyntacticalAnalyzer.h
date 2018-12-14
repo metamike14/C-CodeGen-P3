@@ -27,7 +27,7 @@ class SyntacticalAnalyzer
     int stmt_pair();
     int stmt_pair_body();
     int action(string check);
-    int any_other_token();
+    int any_other_token(string rule50Check);
 
     private:
 	LexicalAnalyzer * lex;

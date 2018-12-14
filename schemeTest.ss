@@ -1,40 +1,27 @@
-(define (sub_five x)
-  (if (number? x)
-      (if (zero? x)
-          -5
-          (- x 5)
-          )
-      'this_function_only_takes_numbers
-      )
+(define (what_is_this n)
+  (cond   ((null? n) 'this_is_null)
+          ((number? n) 'this_is_number)
+          ((list? n) 'this_is_a_list)
+          ((string? n) 'this_is_a_string)
+          (else 'dont_know_what_this_is))
   )
-
-(define (add_five x)
-  (if (number? x)
-      (if (zero? x)
-          5
-          (+ x 5)
-          )
-      'this_function_only_takes_numbers
-      )
-  )
-
 (define (main)
-  (display (sub_five 0))
+  (display (what_is_this "word"))
   (newline)
 
-  (display (sub_five 9))
+  (display (what_is_this 14))
   (newline)
 
-  (display (sub_five -3))
+  (display (what_is_this '(a b c)))
   (newline)
 
-  (display (add_five 0))
+  (display (what_is_this '()))
   (newline)
 
-  (display (add_five 4))
+  (display (what_is_this 'foo))
   (newline)
 
-  (display (add_five -3))
+  (display (what_is_this 'cdr))
   (newline)
   )
 

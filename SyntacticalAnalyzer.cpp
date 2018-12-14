@@ -77,12 +77,15 @@ int SyntacticalAnalyzer::define() {
                 if(token == RPAREN_T){
                     cg->WriteCode(0, ")\n{\n");
                     token = lex->GetToken(); // get next token after ')'
-                    errors += stmt("");
+                    if(main != "main")
+                        errors += stmt("return");
+                    else
+                        errors += stmt("");
                     errors += stmt_list("");
                     if(token == RPAREN_T){
                         if(main == "main")
-                            cg->WriteCode(1, "return 0;\n");
-                        cg->WriteCode(0, "}\n\n");
+                            cg->WriteCode(1, "return 0");
+                        cg->WriteCode(0, ";\n}\n\n");
                         token = lex->GetToken(); // get next token after ')'
                     } else{
                         lex->ReportSyntactErrors("RPAREN_T expected");
@@ -147,9 +150,16 @@ int SyntacticalAnalyzer::stmt_list(string op) {
             token == STRLIT_T || token == SQUOTE_T){
         tokenActionsFile << "Using Rule 5\n";
         errors += stmt("");
-        cg->WriteCode(0, op);
-        errors += stmt_list("");
+        if(token != RPAREN_T)
+            cg->WriteCode(0, op);
+        if(op == " ,")
+            errors += stmt_list(op); //Only gets called when making a call to a user made function with multiple params
+        else
+            errors += stmt_list("");
     }else if(token == RPAREN_T){
+        if(op != " ,")
+            cg->WriteCode(0, op);
+        //cg->WriteCode(0, ";\n");
         tokenActionsFile << "Using Rule 6\n";
     }else{
         lex->ReportSyntactErrors(lex->GetTokenName(token) + " unexpected");
@@ -183,6 +193,8 @@ int SyntacticalAnalyzer::stmt(string checkIF) {
         if(checkIF == "return")
             cg->WriteCode(1, "return");
         errors += literal();
+        if(checkIF == "listop")
+            cg->WriteCode(0, ");\n");
     } else{
         lex->ReportSyntactErrors(lex->GetTokenName(token) + " unexpected");
         errors++;
@@ -195,17 +207,16 @@ int SyntacticalAnalyzer::literal() {
     tokenActionsFile << "Entering Literal function; current token is: " << lex->GetTokenName(token) << ", lexeme: " << lex->GetLexeme() <<'\n';
     int errors = 0;
     if(token == NUMLIT_T){
-        cg->WriteCode(0, " Object (" + lex->GetLexeme() + ")");
+        cg->WriteCode(0, " ( Object (" + lex->GetLexeme() + ") )");
         tokenActionsFile << "Using Rule 10\n";
         token = lex->GetToken();
 
     }else if(token == STRLIT_T){
-        cg->WriteCode(0, " Object (" + lex->GetLexeme() + ")");
+        cg->WriteCode(0, " ( Object (" + lex->GetLexeme() + ") )");
         tokenActionsFile << "Using Rule 11\n";
         token = lex->GetToken();
 
     }else if(token == SQUOTE_T){
-        cg->WriteCode(0, " Object (\"" + lex->GetLexeme() + "\")");
         tokenActionsFile << "Using Rule 12\n";
         token = lex->GetToken();
         errors+= quoted_list();
@@ -222,7 +233,7 @@ int SyntacticalAnalyzer::quoted_list() {
     int errors = 0;
     if(&otherTokens[32] != find(&otherTokens[0], &otherTokens[32], token)){
         tokenActionsFile << "Using Rule 13\n";
-        errors += any_other_token();
+        errors += any_other_token("");
     } else{
         lex->ReportSyntactErrors(lex->GetTokenName(token) + " unexpected");
         errors++;
@@ -236,7 +247,7 @@ int SyntacticalAnalyzer::more_tokens() {
     int errors = 0;
     if(&otherTokens[32] != find(&otherTokens[0], &otherTokens[32], token)) {
         tokenActionsFile << "Using Rule 14\n";
-        errors += any_other_token();
+        errors += any_other_token("yes");
         errors += more_tokens();
     }
     else if(token == RPAREN_T){
@@ -297,6 +308,7 @@ int SyntacticalAnalyzer::stmt_pair() {
     if(token == LPAREN_T){
         tokenActionsFile << "Using Rule 20\n";
         token = lex->GetToken();
+        cg->WriteCode(1, "else ");
         errors += stmt_pair_body();
     }else if(token == RPAREN_T){
         tokenActionsFile << "Using Rule 21\n";
@@ -318,7 +330,9 @@ int SyntacticalAnalyzer::stmt_pair_body()
     {
         tokenActionsFile << "Using Rule 23\n";
         token = lex->GetToken();
-        errors += stmt("");
+        cg->WriteCode(1, " {\n");
+        errors += stmt("return");
+        cg->WriteCode(0, ";\n}\n");
         if(token == RPAREN_T)
         {
             token = lex->GetToken();
@@ -332,8 +346,12 @@ int SyntacticalAnalyzer::stmt_pair_body()
     else if(token == LPAREN_T || token == IDENT_T || token == NUMLIT_T || token == STRLIT_T || token == SQUOTE_T)
     {
         tokenActionsFile << "Using Rule 22\n";
+        cg->WriteCode(0, "if (");
         errors += stmt("");
-        errors += stmt("");
+        cg->WriteCode(0, ")\n");
+        cg->WriteCode(1, "{\n");
+        errors += stmt("return");
+        cg->WriteCode(0, ";\n}\n");
         if(token == RPAREN_T)
         {
             token = lex->GetToken();
@@ -354,7 +372,7 @@ int SyntacticalAnalyzer::stmt_pair_body()
 }
 
 
-int SyntacticalAnalyzer::any_other_token()
+int SyntacticalAnalyzer::any_other_token(string rule50Check)
 {
     tokenActionsFile << "Entering Any_Other_Token function; current token is: " << lex->GetTokenName(token) << ", lexeme: " << lex->GetLexeme() <<'\n';
     int errors = 0;
@@ -362,9 +380,11 @@ int SyntacticalAnalyzer::any_other_token()
     {
         tokenActionsFile << "Using Rule 50\n";
         token = lex->GetToken();
+        cg->WriteCode(0, " ( Object (\"(");
         errors += more_tokens();
         if(token == RPAREN_T)
         {
+            cg->WriteCode(0, ")\") )");
             token = lex->GetToken();
         }
         else
@@ -377,7 +397,7 @@ int SyntacticalAnalyzer::any_other_token()
     {
         tokenActionsFile << "Using Rule 79\n";
         token = lex->GetToken();
-        errors += any_other_token();
+        errors += any_other_token("");
     }
     else if(&otherTokens[32] != find(&otherTokens[0], &otherTokens[32], token))
     {
@@ -391,6 +411,10 @@ int SyntacticalAnalyzer::any_other_token()
                     tokenActionsFile << "Using Rule " << i + 51 << "\n";
             }
         }
+        if(rule50Check == "yes")
+            cg->WriteCode(0, " " + lex->GetLexeme()) ;
+        else
+            cg->WriteCode(0, " Object(\"" + lex->GetLexeme() + "\")") ;
         token = lex->GetToken();
     }
 
@@ -423,78 +447,131 @@ int SyntacticalAnalyzer::action(string check) {
         //rules with tokens and two stmt after it
         tokenActionsFile << "Using Rule 27\n";
         token = lex->GetToken();
+        cg->WriteCode(0, check);
+        cg->WriteCode(0, " cons( ");
         errors+= stmt("");
+        cg->WriteCode(0, " , ");
         errors+= stmt("");
+        cg->WriteCode(0, " )");
     }
     else if (token == MODULO_T ) {
         //rules with tokens and two stmt after it
         tokenActionsFile << "Using Rule 40\n";
         token = lex->GetToken();
-        errors+= stmt("");
-        errors+= stmt("");
-    }
-    else if (token == LISTOP_T || token == NOT_T || token == NUMBERP_T || token == LISTP_T || token == ZEROP_T ||
-            token == NULLP_T || token == STRINGP_T || token == ROUND_T || token == DISPLAY_T) {
-        //all rules with a token(see above) and one stmt after it
-        if(token == LISTOP_T)
-            tokenActionsFile << "Using Rule 26\n";
-        else if(token == NOT_T )
-            tokenActionsFile << "Using Rule 30\n";
-        else if(token == NUMBERP_T){
-            cg->WriteCode(0, "numberp");
-            tokenActionsFile << "Using Rule 31\n";
-        }
-        else if(token == LISTP_T )
-            tokenActionsFile << "Using Rule 32\n";
-        else if(token == ZEROP_T){
-            cg->WriteCode(0, "zerop");
-            tokenActionsFile << "Using Rule 33\n";
-        }
-        else if(token == NULLP_T )
-            tokenActionsFile << "Using Rule 34\n";
-        else if(token == STRINGP_T)
-            tokenActionsFile << "Using Rule 35\n";
-        else if(token == ROUND_T )
-            tokenActionsFile << "Using Rule 41\n";
-        else if(token == DISPLAY_T)
-            cg->WriteCode(1, "cout << ");
-            tokenActionsFile << "Using Rule 48\n";
-        token = lex->GetToken();
+        errors += stmt("%");
         errors += stmt("");
     }
+    else if(token == LISTOP_T){
+        if(check == "return")
+            cg->WriteCode(0, check);
+        cg->WriteCode(0, " (listop( \"" + lex->GetLexeme() + "\" ,");
+        tokenActionsFile << "Using Rule 26\n";
+        token = lex->GetToken();
+        errors += stmt("listop");
+        cg->WriteCode(0, ") )");
+    }
+    else if(token == DISPLAY_T){
+        cg->WriteCode(1, "cout << ");
+        tokenActionsFile << "Using Rule 48\n";
+        token = lex->GetToken();
+        errors += stmt("");
+        cg->WriteCode(0, ";\n");
+    }
+    else if (token == NOT_T || token == NUMBERP_T || token == LISTP_T || token == ZEROP_T ||
+            token == NULLP_T || token == STRINGP_T || token == ROUND_T) {
+        //all rules with a token(see above) and one stmt after it
+        if(token == NOT_T )
+            tokenActionsFile << "Using Rule 30\n";
+        else if(token == NUMBERP_T){
+            cg->WriteCode(0, check);
+            cg->WriteCode(0, " (numberp");
+            tokenActionsFile << "Using Rule 31\n";
+        }
+        else if(token == LISTP_T ){
+            cg->WriteCode(0, check);
+            cg->WriteCode(0, " (listp");
+            tokenActionsFile << "Using Rule 32\n";
+        }
+        else if(token == ZEROP_T){
+            cg->WriteCode(0, check);
+            cg->WriteCode(0, " (zerop");
+            tokenActionsFile << "Using Rule 33\n";
+        }
+        else if(token == NULLP_T ){
+            cg->WriteCode(0, check);
+            cg->WriteCode(0, " (nullp");
+            tokenActionsFile << "Using Rule 34\n";
+        }
+        else if(token == STRINGP_T){
+            cg->WriteCode(0, check);
+            cg->WriteCode(0, " (stringp");
+            tokenActionsFile << "Using Rule 35\n";
+        }
+        else if(token == ROUND_T ){
+            cg->WriteCode(0, check);
+            cg->WriteCode(0, " (round");
+            tokenActionsFile << "Using Rule 41\n";
+        }
+        token = lex->GetToken();
+        errors += stmt("");
+        cg->WriteCode(0, ")");
+    }
+    else if(token == IDENT_T){
+        cg->WriteCode(0, " (" + lex->GetLexeme() + " (");
+        tokenActionsFile << "Using Rule 47\n";
+        token = lex->GetToken();
+        errors+= stmt_list(" ,");
+        cg->WriteCode(0, " ) )");
+    }
     else if (token == AND_T || token == OR_T || token == PLUS_T || token == MULT_T || token == EQUALTO_T ||
-            token == GT_T || token == LT_T || token == GTE_T || token == LTE_T || token == IDENT_T ) {
+            token == GT_T || token == LT_T || token == GTE_T || token == LTE_T) {
         //all rules with a token(see above) and one stmt_list after it
         string _operator;
-        if(token == AND_T)
+        if(token == AND_T){
+            _operator = "&&";
+            cg->WriteCode(0, check);
             tokenActionsFile << "Using Rule 28\n";
-        else if(token == OR_T )
+        }
+        else if(token == OR_T ){
+            _operator = "||";
+            cg->WriteCode(0, check);
             tokenActionsFile << "Using Rule 29\n";
+        }
         else if(token == PLUS_T){
+            _operator = lex->GetLexeme();
             cg->WriteCode(0, check);
             tokenActionsFile << "Using Rule 36\n";
         }
         else if(token == MULT_T ){
+            _operator = lex->GetLexeme();
             cg->WriteCode(0, check);
             tokenActionsFile << "Using Rule 39\n";
         }
-        else if(token == EQUALTO_T)
+        else if(token == EQUALTO_T){
+            _operator = "==";
+            cg->WriteCode(0, check);
             tokenActionsFile << "Using Rule 42\n";
-        else if(token == GT_T )
-            tokenActionsFile << "Using Rule 43\n";
-        else if(token == LT_T)
-            tokenActionsFile << "Using Rule 44\n";
-        else if(token == GTE_T )
-            tokenActionsFile << "Using Rule 45\n";
-        else if(token == LTE_T)
-            tokenActionsFile << "Using Rule 46\n";
-        else if(token == IDENT_T){
-            cg->WriteCode(0, lex->GetLexeme() + " (");
-            _operator = " );\n";
-            tokenActionsFile << "Using Rule 47\n";
         }
-        if(token != IDENT_T)
+        else if(token == GT_T ){
             _operator = lex->GetLexeme();
+            cg->WriteCode(0, check);
+            tokenActionsFile << "Using Rule 43\n";
+        }
+        else if(token == LT_T){
+            _operator = lex->GetLexeme();
+            cg->WriteCode(0, check);
+            tokenActionsFile << "Using Rule 44\n";
+        }
+        else if(token == GTE_T ){
+            _operator = lex->GetLexeme();
+            cg->WriteCode(0, check);
+            tokenActionsFile << "Using Rule 45\n";
+        }
+        else if(token == LTE_T){
+            _operator = lex->GetLexeme();
+            cg->WriteCode(0, check);
+            tokenActionsFile << "Using Rule 46\n";
+        }
         token = lex->GetToken();
         errors+= stmt_list(_operator);
     }
