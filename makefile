@@ -27,6 +27,8 @@ submit : Project3.cpp LexicalAnalyzer.h LexicalAnalyzer.cpp SyntacticalAnalyzer.
 	cp LexicalAnalyzer.cpp Team9P2
 	cp SyntacticalAnalyzer.h Team9P2
 	cp SyntacticalAnalyzer.cpp Team9P2
+	cp CodeGenerator.h Team9P2
+	cp CodeGenerator.cpp Team9P2	
 	cp makefile Team9P2
 	cp README.txt Team9P2
 	tar cfvz Team9P2.tgz TeamTP2
