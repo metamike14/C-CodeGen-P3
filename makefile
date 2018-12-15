@@ -31,5 +31,5 @@ submit : Project3.cpp LexicalAnalyzer.h LexicalAnalyzer.cpp SyntacticalAnalyzer.
 	cp CodeGenerator.cpp Team9P2	
 	cp makefile Team9P2
 	cp README.txt Team9P2
-	tar cfvz Team9P2.tgz TeamTP2
+	tar cfvz Team9P2.tgz Team9P2
 	cp Team9P2.tgz ~tiawatts/cs460drop
