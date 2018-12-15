@@ -20,16 +20,16 @@ clean :
 	rm *.o P3.out 
 
 submit : Project3.cpp LexicalAnalyzer.h LexicalAnalyzer.cpp SyntacticalAnalyzer.h SyntacticalAnalyzer.cpp makefile README.txt
-	rm -rf Team9P2
-	mkdir Team9P2
-	cp Project3.cpp Team9P2
-	cp LexicalAnalyzer.h Team9P2
-	cp LexicalAnalyzer.cpp Team9P2
-	cp SyntacticalAnalyzer.h Team9P2
-	cp SyntacticalAnalyzer.cpp Team9P2
-	cp CodeGenerator.h Team9P2
-	cp CodeGenerator.cpp Team9P2	
-	cp makefile Team9P2
-	cp README.txt Team9P2
-	tar cfvz Team9P2.tgz Team9P2
-	cp Team9P2.tgz ~tiawatts/cs460drop
+	rm -rf Team9P3
+	mkdir Team9P3
+	cp Project3.cpp Team9P3
+	cp LexicalAnalyzer.h Team9P3
+	cp LexicalAnalyzer.cpp Team9P3
+	cp SyntacticalAnalyzer.h Team9P3
+	cp SyntacticalAnalyzer.cpp Team9P3
+	cp CodeGenerator.h Team9P3
+	cp CodeGenerator.cpp Team9P3	
+	cp makefile Team9P3
+	cp README.txt Team9P3
+	tar cfvz Team9P3tgz Team9P3
+	cp Team9P3tgz ~tiawatts/cs460drop
