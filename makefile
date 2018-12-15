@@ -22,7 +22,7 @@ clean :
 submit : Project3.cpp LexicalAnalyzer.h LexicalAnalyzer.cpp SyntacticalAnalyzer.h SyntacticalAnalyzer.cpp makefile README.txt
 	rm -rf Team9P2
 	mkdir Team9P2
-	cp Project2.cpp Team9P2
+	cp Project3.cpp Team9P2
 	cp LexicalAnalyzer.h Team9P2
 	cp LexicalAnalyzer.cpp Team9P2
 	cp SyntacticalAnalyzer.h Team9P2
